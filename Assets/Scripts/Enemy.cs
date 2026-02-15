@@ -1,28 +1,51 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(Collider))]
+
 public class Enemy : MonoBehaviour
 {
-    private Quaternion _startRotation;
-    
+    [SerializeField] private float _moveSpeed = 5f;
+
+    private bool _isMoving;
+
     public event Action<Enemy> Death;
+
+    public void SetStartPosition(Vector3 position)
+    {
+        transform.position = position;
+    }
+
+    public void SetStartRotation(Quaternion rotation)
+    {
+        transform.rotation = rotation;
+    }
     
-    public void SetRunDirection(Quaternion direction)
+    private void OnEnable()
     {
-        
+        _isMoving = true;
+
+        StartCoroutine(MoveLoop());
     }
 
-    public void Run()
+    private void OnCollisionEnter(Collision collision)
     {
-        
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.TryGetComponent<Wall>(out _))
+        if (collision.gameObject.TryGetComponent<Wall>(out _))
         {
+            _isMoving = false;
+
             Death?.Invoke(this);
+        }
+    }
+
+    private IEnumerator MoveLoop()
+    {
+        while (_isMoving)
+        {
+            transform.Translate(Vector3.forward * _moveSpeed * Time.deltaTime);
+
+            yield return null;
         }
     }
 }

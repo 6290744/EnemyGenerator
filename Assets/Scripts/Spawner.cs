@@ -18,7 +18,7 @@ public class EnemySpawner : MonoBehaviour
     private void Awake()
     {
         _poolOfEnemies = new ObjectPool<Enemy>(
-            createFunc: () => Instantiate(_enemyPrefab, ChooseStartPosition(), ChooseStartRotation()),
+            createFunc: () => Instantiate(_enemyPrefab),
             actionOnGet: (enemy) => OnGetFromPool(enemy),
             actionOnRelease: (enemy) => OnReleaseToPool(enemy),
             actionOnDestroy: (enemy) => Destroy(enemy.gameObject),
@@ -30,14 +30,14 @@ public class EnemySpawner : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(SpawnLoop());
+        StartCoroutine(SpawnLoop(true));
     }
 
     private void OnGetFromPool(Enemy enemy)
     {
-        enemy.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
+        enemy.SetStartPosition(GetStartPosition());
+        enemy.SetStartRotation(GetStartRotation());
         enemy.gameObject.SetActive(true);
-        enemy.Run();
 
         enemy.Death += OnEnemyDeath;
     }
@@ -54,7 +54,7 @@ public class EnemySpawner : MonoBehaviour
         _poolOfEnemies.Release(enemy);
     }
 
-    private Vector3 ChooseStartPosition()
+    private Vector3 GetStartPosition()
     {
         int maximalSpawnPointIndex = _spawnPoints.Count - 1;
         int choosedSpawnPointIndex = Random.Range(0, maximalSpawnPointIndex);
@@ -62,25 +62,25 @@ public class EnemySpawner : MonoBehaviour
         return _spawnPoints[choosedSpawnPointIndex].GetSpawnPosition();
     }
 
-    private Quaternion ChooseStartRotation()
+    private Quaternion GetStartRotation()
     {
         int rotationX = 0;
         int rotationZ = 0;
         int rotationY = Random.Range(0, 360);
-
-        return Quaternion.Euler(rotationX, rotationY, rotationZ);
+        
+        return Quaternion.Euler(rotationX, rotationY, rotationZ);;
     }
 
-    private IEnumerator SpawnLoop()
+    private IEnumerator SpawnLoop(bool isSpawning)
     {
-        while (isSpawning)
-        {
-            if (_poolOfEnemies.CountActive < _enemyMaximalCount)
-            {
-                _poolOfEnemies.Get();
-            }
-
-            yield return new WaitForSeconds(_spawnInterval);
-        }
+         while (isSpawning)
+         {
+             if (_poolOfEnemies.CountActive < _enemyMaximalCount)
+             {
+                 _poolOfEnemies.Get();
+             }
+        
+             yield return new WaitForSeconds(_spawnInterval);
+         }
     }
 }
