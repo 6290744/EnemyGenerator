@@ -56,8 +56,7 @@ public class EnemySpawner : MonoBehaviour
 
     private Vector3 GetStartPosition()
     {
-        int maximalSpawnPointIndex = _spawnPoints.Count - 1;
-        int choosedSpawnPointIndex = Random.Range(0, maximalSpawnPointIndex);
+        int choosedSpawnPointIndex = Random.Range(0, _spawnPoints.Count);
 
         return _spawnPoints[choosedSpawnPointIndex].GetSpawnPosition();
     }
